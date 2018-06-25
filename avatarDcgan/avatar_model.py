@@ -256,3 +256,24 @@ class AvatarModel:
             samples = sess.run(sample_imgs, feed_dict={noise_imgs: sample_noise})
         for num in range(len(samples)):
             self.avatar.save_img(samples[num], 'samples'+os.sep+str(num)+'.jpg')
+            
+            
+            
+     def dis(self):
+        #判别图片真伪
+        '''
+        读取真伪图片时，均以读取真实图片格式读取，只需把data_name文件改为你要判别的真伪图片所在的文件夹，并更改source_shape为你的图片大小，特别地，
+        判别时一次读取64张（batch_size）,所以你的文件夹下至少有64张图片
+        '''
+        real_imgs = tf.placeholder(tf.float32, self.batch_shape, name='real_images')
+
+        # 判别器
+        real_outputs, real_logits = self.discriminator(real_imgs)
+        saver = tf.train.Saver()
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            saver.restore(sess, tf.train.latest_checkpoint('.'))
+            batches = self.avatar.batches()
+            for batch_imgs in batches:
+                outputs_real= sess.run(real_outputs, feed_dict={real_imgs: batch_imgs})
+                print(outputs_real)
